@@ -36,8 +36,9 @@ public class PhotoAnnotationFragment extends Fragment {
         File imageFile = new File(getActivity().getExternalFilesDir(null), imageFileName);
         if (imageFile.exists()) {
             Bitmap bmp = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
-            ImageView imageView = (ImageView) view.findViewById(R.id.image_view);
-            imageView.setImageBitmap(bmp);
+            Bitmap orientedBmp = ExifUtil.rotateBitmap(imageFile.getAbsolutePath(), bmp);
+            TouchImageView imageView = (TouchImageView) view.findViewById(R.id.image_view);
+            imageView.setImageBitmap(orientedBmp);
         }
         return view;
     }

@@ -68,8 +68,5 @@
             android:text="@string/orientation"
             android:id="@+id/control_orien"
             android:layout_gravity="center_horizontal|top" />
-
-
     </FrameLayout>
-
 </RelativeLayout>
