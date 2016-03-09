@@ -40,6 +40,8 @@ public class PhotoAnnotationFragment extends Fragment {
     private String mImageFileName;
     private String mImageMetaFileName;
 
+    private ProgressDialog mProgressDialog;
+
     public PhotoAnnotationFragment() {
         // Required empty public constructor
     }
@@ -72,18 +74,20 @@ public class PhotoAnnotationFragment extends Fragment {
         str = "{\"image\": {\"meta\": " + str + "}}";
         RequestBody json = RequestBody.create(MediaType.parse("multipart/form-data"), str);
         Call<ImageQueryResult> call = RestClient.getSharedInstance().getApiService().getAnnotationsOnImage(file, shopId, json);
-        final ProgressDialog progressDialog = new ProgressDialog(getActivity(), R.style.AppTheme_Dark_Dialog);
-        progressDialog.setIndeterminate(true);
-        progressDialog.setMessage("Searching...");
-        progressDialog.show();
+        mProgressDialog = new ProgressDialog(getActivity(), R.style.AppTheme_Dark_Dialog);
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setMessage("Searching...");
+        mProgressDialog.show();
         call.enqueue(new Callback<ImageQueryResult>() {
             @Override
             public void onResponse(Response<ImageQueryResult> response, Retrofit retrofit) {
+                mProgressDialog.hide();
                 mQueryResult = response.body();
             }
 
             @Override
             public void onFailure(Throwable t) {
+                mProgressDialog.hide();
                 Toast.makeText(getActivity(), "Failed to fetch annotations.", Toast.LENGTH_LONG).show();
             }
         });
