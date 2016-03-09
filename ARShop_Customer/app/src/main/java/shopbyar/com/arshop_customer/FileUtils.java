@@ -1,6 +1,10 @@
 package shopbyar.com.arshop_customer;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,5 +74,22 @@ public class FileUtils {
 
     public static boolean createFolder(File dir) {
         return dir.mkdir();
+    }
+
+    public static String readTextFile(File file) {
+        if (file.exists()) {
+            try {
+                StringBuilder sb = new StringBuilder();
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                }
+                return sb.toString();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return "";
     }
 }
