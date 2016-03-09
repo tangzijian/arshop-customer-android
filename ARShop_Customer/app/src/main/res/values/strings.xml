@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">ARShop_Customer</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_signup">SignupActivity</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="gps">GPS</string>
+    <string name="wifi">WIFI</string>
+    <string name="take">Take</string>
+    <string name="orientation">ORIEN</string>
+
+    <string name="menu_item_clear_memory_cache">Clear memory cache</string>
+    <string name="menu_item_clear_disc_cache">Clear disc cache</string>
+    <string name="descr_image">Image</string>
+
+    <string name="add_new_folder">+ Add New Folder</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
