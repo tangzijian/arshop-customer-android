@@ -36,7 +36,7 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import shopbyar.com.arshop_customer.model.User;
 
-public class MainActivity extends AppCompatActivity implements CameraFragment.ImageSaver.OnPhotoSavedListener {
+public class MainActivity extends AppCompatActivity {
     @InjectView(R.id.toolbar)
     Toolbar toolbar;
     protected Drawer drawer = null;
@@ -45,16 +45,6 @@ public class MainActivity extends AppCompatActivity implements CameraFragment.Im
     private LocationScanner mLocationScanner;
     private OrientationScanner mOrientationScanner;
     private WifiScanner mWifiScanner;
-
-    @Override
-    public void onPhotoSaved(File imageFile, File metaFile) {
-        PhotoAnnotationFragment fragment = new PhotoAnnotationFragment();
-        Bundle bundle = new Bundle();
-        bundle.putString(imageFile.getAbsolutePath(), "image_file_path");
-        bundle.putString(metaFile.getAbsolutePath(), "meta_file_path");
-        fragment.setArguments(bundle);
-        getFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).addToBackStack(null).commit();
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

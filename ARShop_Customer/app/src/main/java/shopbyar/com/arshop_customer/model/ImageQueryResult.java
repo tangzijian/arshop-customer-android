@@ -10,15 +10,15 @@ import java.util.List;
  */
 public class ImageQueryResult {
     @SerializedName("shop_id")
-    int shopId;
-    int code;
+    public int shopId;
+    public int code;
     @SerializedName("result")
-    List<Annotation> annotations;
+    public List<Annotation> annotations;
     @SerializedName("file")
-    String fileName;
+    public String fileName;
     @SerializedName("clusters")
-    int clusterId;
-    String message;
+    public int clusterId;
+    public String message;
 
     public ImageQueryResult() {
         annotations = new ArrayList<>();

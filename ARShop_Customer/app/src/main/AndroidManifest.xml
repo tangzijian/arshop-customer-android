@@ -16,6 +16,7 @@
 
     <application
         android:name=".ARShopApplication"
+        android:largeHeap="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"

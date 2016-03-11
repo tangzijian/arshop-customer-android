@@ -892,11 +892,6 @@ public class CameraFragment extends Fragment implements View.OnClickListener {
      */
     public static class ImageSaver implements Runnable {
 
-        public interface OnPhotoSavedListener {
-            public void onPhotoSaved(File imageFile, File metaFile);
-        }
-
-        OnPhotoSavedListener mCallback;
         /**
          * The JPEG image
          */
@@ -919,11 +914,6 @@ public class CameraFragment extends Fragment implements View.OnClickListener {
 
         @Override
         public void run() {
-            try {
-                mCallback = (OnPhotoSavedListener) mActivity;
-            } catch (ClassCastException e) {
-                throw new ClassCastException(mActivity.toString() + "must implement OnPhotoSavedListener");
-            }
             if (!existOrCreateFolder()) return;
 
             File imageFile = createImageFile();
@@ -936,7 +926,6 @@ public class CameraFragment extends Fragment implements View.OnClickListener {
 
             saveMetaDataToFile(metaFile);
 
-//            mCallback.onPhotoSaved(imageFile, metaFile);
         }
 
         private void saveMetaDataToFile(File metaFile) {
