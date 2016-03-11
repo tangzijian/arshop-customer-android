@@ -1,5 +1,9 @@
 package shopbyar.com.arshop_customer.rest;
 
+import com.squareup.okhttp.OkHttpClient;
+
+import java.util.concurrent.TimeUnit;
+
 import retrofit.GsonConverterFactory;
 import retrofit.Retrofit;
 import shopbyar.com.arshop_customer.rest.service.APIService;
@@ -14,8 +18,12 @@ public class RestClient {
     private APIService apiService;
 
     private RestClient() {
+        OkHttpClient client = new OkHttpClient();
+        client.setConnectTimeout(2, TimeUnit.MINUTES);
+        client.setReadTimeout(2, TimeUnit.MINUTES);
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
+                .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         apiService = retrofit.create(APIService.class);

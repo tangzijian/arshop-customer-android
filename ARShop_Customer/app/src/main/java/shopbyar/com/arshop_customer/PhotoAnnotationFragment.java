@@ -77,10 +77,13 @@ public class PhotoAnnotationFragment extends Fragment {
         mImageMetaFileName = getArguments().getString("image_meta_file_name");
         File imageFile = new File(mImageFileName);
         if (imageFile.exists()) {
-            Bitmap bmp = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = 3;
+            Bitmap bmp = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
+            Log.d("bitmap: ", "width: "+bmp.getWidth()+", height: "+bmp.getHeight());
             Bitmap orientedBmp = ExifUtil.rotateBitmap(imageFile.getAbsolutePath(), bmp);
             Bitmap drawableBmp = orientedBmp.copy(Bitmap.Config.ARGB_8888, true);
-            orientedBmp.recycle();
+            bmp.recycle();
             System.gc();
             mCanvas = new Canvas(drawableBmp);
             mImageView = (TouchImageView) view.findViewById(R.id.image_view);
@@ -93,7 +96,7 @@ public class PhotoAnnotationFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (savedInstanceState == null) {
+        if (savedInstanceState == null && mQueryResult == null) {
             RequestBody shopId = RequestBody.create(MediaType.parse("multipart/form-data"), "27");
             File f = new File(mImageFileName);
             RequestBody file = RequestBody.create(MediaType.parse("multipart/form-data"), f);
