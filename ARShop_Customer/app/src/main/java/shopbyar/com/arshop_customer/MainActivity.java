@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
         Class fragmentClass = null;
         switch ((int)item.getIdentifier()) {
             case 1:
-                fragmentClass = CameraFragment.class;
+                fragmentClass = PhotoPickerFragment.class;
                 break;
             case 2:
                 fragmentClass = MyShoppingListFragment.class;
@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
                 userLogout();
                 return;
             default:
-                fragmentClass = CameraFragment.class;
+                fragmentClass = PhotoPickerFragment.class;
         }
         try {
             fragment = (Fragment) fragmentClass.newInstance();
