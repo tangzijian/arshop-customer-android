@@ -14,7 +14,8 @@ import android.widget.Button;
  */
 public class PhotoPickerFragment extends Fragment {
 
-
+    private Button mSelectPhotoBtn;
+    private View.OnClickListener mListener;
     public PhotoPickerFragment() {
         // Required empty public constructor
     }
@@ -25,13 +26,8 @@ public class PhotoPickerFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_photo_picker, container, false);
-        Button selectPhotoBtn = (Button) view.findViewById(R.id.select_existing_photo);
-        selectPhotoBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
+        mSelectPhotoBtn = (Button) view.findViewById(R.id.select_existing_photo);
+        mSelectPhotoBtn.setOnClickListener(mListener);
         Button takePhotoBtn = (Button) view.findViewById(R.id.take_photo);
         takePhotoBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -40,6 +36,13 @@ public class PhotoPickerFragment extends Fragment {
             }
         });
         return view;
+    }
+
+    public void setOnClickListener(View.OnClickListener listener) {
+        mListener = listener;
+        if (mSelectPhotoBtn != null) {
+            mSelectPhotoBtn.setOnClickListener(listener);
+        }
     }
 
     public void gotoCameraFragment() {

@@ -798,8 +798,8 @@ public class CameraFragment extends Fragment implements View.OnClickListener {
                     unlockFocus();
                     PhotoAnnotationFragment fragment = new PhotoAnnotationFragment();
                     Bundle args = new Bundle();
-                    args.putString("image_file_name", mFolderName+"/"+mFileName);
-                    args.putString("image_meta_file_name", mFolderName+"/"+mFileName+".txt");
+                    args.putString("image_file_name", new File(getActivity().getExternalFilesDir(null), mFolderName+"/"+mFileName).getAbsolutePath());
+                    args.putString("image_meta_file_name", new File(getActivity().getExternalFilesDir(null), mFolderName+"/"+mFileName+".txt").getAbsolutePath());
                     fragment.setArguments(args);
                     activity.getFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).addToBackStack(null).commit();
                 }

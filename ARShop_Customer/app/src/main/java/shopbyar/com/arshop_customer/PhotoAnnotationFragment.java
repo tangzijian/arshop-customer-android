@@ -44,7 +44,6 @@ import shopbyar.com.arshop_customer.rest.RestClient;
 public class PhotoAnnotationFragment extends Fragment {
 
     private ImageQueryResult mQueryResult;
-    private static boolean mShouldFireQuery = true;
 
     private String mImageFileName;
     private String mImageMetaFileName;
@@ -64,14 +63,19 @@ public class PhotoAnnotationFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_photo_annotation, container, false);
         mImageFileName = getArguments().getString("image_file_name");
         mImageMetaFileName = getArguments().getString("image_meta_file_name");
-        String[] lst = getActivity().getExternalFilesDir(null).list();
-        File imageFile = new File(getActivity().getExternalFilesDir(null), mImageFileName);
+        File imageFile = new File(mImageFileName);
         if (imageFile.exists()) {
             Bitmap bmp = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
             Bitmap orientedBmp = ExifUtil.rotateBitmap(imageFile.getAbsolutePath(), bmp);
@@ -89,12 +93,11 @@ public class PhotoAnnotationFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (mShouldFireQuery) {
-            mShouldFireQuery = false;
+        if (savedInstanceState == null) {
             RequestBody shopId = RequestBody.create(MediaType.parse("multipart/form-data"), "27");
-            File f = new File(getActivity().getExternalFilesDir(null), mImageFileName);
+            File f = new File(mImageFileName);
             RequestBody file = RequestBody.create(MediaType.parse("multipart/form-data"), f);
-            String str = FileUtils.readTextFile(new File(getActivity().getExternalFilesDir(null), mImageMetaFileName));
+            String str = FileUtils.readTextFile(new File(mImageMetaFileName));
             str = "{\"image\": {\"meta\": " + str + "}}";
             RequestBody json = RequestBody.create(MediaType.parse("multipart/form-data"), str);
             Call<ImageQueryResult> call = RestClient.getSharedInstance().getApiService().getAnnotationsOnImage(file, shopId, json);
