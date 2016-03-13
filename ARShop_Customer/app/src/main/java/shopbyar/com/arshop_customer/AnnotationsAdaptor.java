@@ -1,5 +1,8 @@
 package shopbyar.com.arshop_customer;
 
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,6 +46,16 @@ public class AnnotationsAdaptor extends RecyclerView.Adapter<AnnotationsAdaptor.
         public AnnotationsViewHolder(View v) {
             super(v);
             annotationId = (TextView) v.findViewById(R.id.annotation_id);
+            v.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AnnotationDetailFragment fragment = new AnnotationDetailFragment();
+                    Bundle args = new Bundle();
+                    args.putString("annotation_text", annotationId.getText().toString());
+                    fragment.setArguments(args);
+                    ((AppCompatActivity) v.getContext()).getFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).addToBackStack(null).commit();
+                }
+            });
         }
     }
 }
