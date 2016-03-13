@@ -48,7 +48,7 @@ import shopbyar.com.arshop_customer.rest.RestClient;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class PhotoAnnotationFragment extends Fragment implements View.OnTouchListener {
+public class PhotoAnnotationFragment extends Fragment {
 
     private ImageQueryResult mQueryResult;
 
@@ -61,6 +61,7 @@ public class PhotoAnnotationFragment extends Fragment implements View.OnTouchLis
 
     private float mPhotoWidth;
     private float mPhotoHeight;
+    private List<LabelView> mLabels;
 
     public PhotoAnnotationFragment() {
         // Required empty public constructor
@@ -77,14 +78,6 @@ public class PhotoAnnotationFragment extends Fragment implements View.OnTouchLis
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-    }
-
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
-        Log.d("touch location: ", "x: " + x + ",y: " + y);
-        return false;
     }
 
     @Override
@@ -109,7 +102,6 @@ public class PhotoAnnotationFragment extends Fragment implements View.OnTouchLis
             mCanvas = new Canvas(drawableBmp);
             mImageView = (ImageView) view.findViewById(R.id.image_view);
             mImageView.setImageBitmap(drawableBmp);
-            mImageView.setOnTouchListener(this);
             mImageView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
@@ -207,6 +199,22 @@ public class PhotoAnnotationFragment extends Fragment implements View.OnTouchLis
             params.leftMargin = (int)cx + actImageRect[0];
             params.topMargin = (int)cy + actImageRect[1];
             mAnnotationLabelOverlay.addView(label, params);
+            label.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    LabelView view = (LabelView)v;
+                    String text = view.mLabelText.getText().toString();
+                    AnnotationDetailFragment fragment = new AnnotationDetailFragment();
+                    Bundle args = new Bundle();
+                    args.putString("annotation_text", text);
+                    fragment.setArguments(args);
+                    getFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).addToBackStack(null).commit();
+                }
+            });
+            if (mLabels == null) {
+                mLabels = new ArrayList<>();
+            }
+            mLabels.add(label);
         }
     }
 
