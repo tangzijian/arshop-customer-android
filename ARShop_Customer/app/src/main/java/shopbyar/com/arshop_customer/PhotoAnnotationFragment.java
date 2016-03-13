@@ -34,6 +34,7 @@ import com.squareup.okhttp.RequestBody;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import retrofit.Call;
 import retrofit.Callback;
@@ -190,19 +191,17 @@ public class PhotoAnnotationFragment extends Fragment implements View.OnTouchLis
             label.mLabelText.setVisibility(View.VISIBLE);
             label.mLabelText.setText(anno.text);
             float padding = 100;
-//            float imageViewWidth = mImageView.getWidth();
-//            float imageViewHeight = mImageView.getHeight();
             float cx = anno.getCenterX() * actImageRect[2];
             float cy = anno.getCenterY() * actImageRect[3];
             if (cx > actImageRect[2] - padding) {
-                cx = actImageRect[2] - padding;
+                cx = actImageRect[2] - padding + randomInt(-30, 30);
             } else if (cx < padding) {
-                cx = padding;
+                cx = padding + randomInt(-30, 30);
             }
             if (cy > actImageRect[3] - padding) {
-                cy = actImageRect[3] - padding;
+                cy = actImageRect[3] - padding + randomInt(-30, 30);
             } else if (cy < padding) {
-                cy = padding;
+                cy = padding + randomInt(-30, 30);
             }
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             params.leftMargin = (int)cx + actImageRect[0];
@@ -255,5 +254,10 @@ public class PhotoAnnotationFragment extends Fragment implements View.OnTouchLis
         ret[1] = top;
 
         return ret;
+    }
+
+    public int randomInt(int low, int high) {
+        Random random = new Random();
+        return random.nextInt(high-low) + low;
     }
 }
