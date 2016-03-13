@@ -28,7 +28,7 @@ public class AnnotationsAdaptor extends RecyclerView.Adapter<AnnotationsAdaptor.
     @Override
     public void onBindViewHolder(AnnotationsViewHolder holder, int position) {
         Annotation annotation = annotationList.get(position);
-        holder.annotationId.setText("Annotation ID: " + annotation.id);
+        holder.annotationId.setText(annotation.text);
     }
 
     @Override

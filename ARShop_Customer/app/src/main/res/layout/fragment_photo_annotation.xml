@@ -3,8 +3,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <shopbyar.com.arshop_customer.TouchImageView
+    <!--<shopbyar.com.arshop_customer.TouchImageView-->
+        <!--android:id="@+id/image_view"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent" />-->
+    <ImageView
         android:id="@+id/image_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+    <RelativeLayout
+        android:id="@+id/annotation_label_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent">
+    </RelativeLayout>
 </RelativeLayout>

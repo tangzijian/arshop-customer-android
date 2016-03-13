@@ -6,8 +6,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Debug;
@@ -17,9 +19,13 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.squareup.okhttp.MediaType;
@@ -41,15 +47,19 @@ import shopbyar.com.arshop_customer.rest.RestClient;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class PhotoAnnotationFragment extends Fragment {
+public class PhotoAnnotationFragment extends Fragment implements View.OnTouchListener {
 
     private ImageQueryResult mQueryResult;
 
     private String mImageFileName;
     private String mImageMetaFileName;
     private Canvas mCanvas;
-    private TouchImageView mImageView;
+    private ImageView mImageView;
+    private RelativeLayout mAnnotationLabelOverlay;
     private ProgressDialog mProgressDialog;
+
+    private float mPhotoWidth;
+    private float mPhotoHeight;
 
     public PhotoAnnotationFragment() {
         // Required empty public constructor
@@ -69,10 +79,19 @@ public class PhotoAnnotationFragment extends Fragment {
     }
 
     @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        float x = event.getX();
+        float y = event.getY();
+        Log.d("touch location: ", "x: " + x + ",y: " + y);
+        return false;
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_photo_annotation, container, false);
+        mAnnotationLabelOverlay = (RelativeLayout) view.findViewById(R.id.annotation_label_overlay);
         mImageFileName = getArguments().getString("image_file_name");
         mImageMetaFileName = getArguments().getString("image_meta_file_name");
         File imageFile = new File(mImageFileName);
@@ -80,15 +99,23 @@ public class PhotoAnnotationFragment extends Fragment {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = 3;
             Bitmap bmp = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
-            Log.d("bitmap: ", "width: "+bmp.getWidth()+", height: "+bmp.getHeight());
             Bitmap orientedBmp = ExifUtil.rotateBitmap(imageFile.getAbsolutePath(), bmp);
             Bitmap drawableBmp = orientedBmp.copy(Bitmap.Config.ARGB_8888, true);
+            mPhotoWidth = drawableBmp.getWidth();
+            mPhotoHeight = drawableBmp.getHeight();
             bmp.recycle();
             System.gc();
             mCanvas = new Canvas(drawableBmp);
-            mImageView = (TouchImageView) view.findViewById(R.id.image_view);
+            mImageView = (ImageView) view.findViewById(R.id.image_view);
             mImageView.setImageBitmap(drawableBmp);
-            drawAnnotationRects();
+            mImageView.setOnTouchListener(this);
+            mImageView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    mImageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    drawAnnotations();
+                }
+            });
         }
         return view;
     }
@@ -114,7 +141,7 @@ public class PhotoAnnotationFragment extends Fragment {
                 public void onResponse(Response<ImageQueryResult> response, Retrofit retrofit) {
                     mProgressDialog.hide();
                     mQueryResult = response.body();
-                    drawAnnotationRects();
+                    drawAnnotations();
                 }
 
                 @Override
@@ -152,19 +179,81 @@ public class PhotoAnnotationFragment extends Fragment {
         }
     }
 
-    public void drawAnnotationRects() {
+    public void drawAnnotations() {
         if (mQueryResult == null) {
             return;
         }
-        Paint paint = new Paint();
-        paint.setStrokeWidth(5);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setColor(Color.RED);
+        int[] actImageRect = getBitmapPositionInsideImageView(mImageView);
         List<Annotation> annotations = mQueryResult.annotations;
-        for (Annotation anno : annotations) {
-            Log.d("Draw annotation rect: ", anno.getRect().toString());
-            mCanvas.drawRect(anno.getRect(), paint);
+        for (Annotation anno: annotations) {
+            LabelView label = new LabelView(getActivity());
+            label.mLabelText.setVisibility(View.VISIBLE);
+            label.mLabelText.setText(anno.text);
+            float padding = 100;
+//            float imageViewWidth = mImageView.getWidth();
+//            float imageViewHeight = mImageView.getHeight();
+            float cx = anno.getCenterX() * actImageRect[2];
+            float cy = anno.getCenterY() * actImageRect[3];
+            if (cx > actImageRect[2] - padding) {
+                cx = actImageRect[2] - padding;
+            } else if (cx < padding) {
+                cx = padding;
+            }
+            if (cy > actImageRect[3] - padding) {
+                cy = actImageRect[3] - padding;
+            } else if (cy < padding) {
+                cy = padding;
+            }
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            params.leftMargin = (int)cx + actImageRect[0];
+            params.topMargin = (int)cy + actImageRect[1];
+            mAnnotationLabelOverlay.addView(label, params);
         }
-        mImageView.invalidate();
+    }
+
+    /**
+     * Returns the bitmap position inside an imageView.
+     * @param imageView source ImageView
+     * @return 0: left, 1: top, 2: width, 3: height
+     */
+    public static int[] getBitmapPositionInsideImageView(ImageView imageView) {
+        int[] ret = new int[] {0,0,0,0};
+
+        if (imageView == null || imageView.getDrawable() == null)
+            return ret;
+
+        // Get image dimensions
+        // Get image matrix values and place them in an array
+        float[] f = new float[9];
+        imageView.getImageMatrix().getValues(f);
+
+        // Extract the scale values using the constants (if aspect ratio maintained, scaleX == scaleY)
+        final float scaleX = f[Matrix.MSCALE_X];
+        final float scaleY = f[Matrix.MSCALE_Y];
+
+        // Get the drawable (could also get the bitmap behind the drawable and getWidth/getHeight)
+        final Drawable d = imageView.getDrawable();
+        final int origW = d.getIntrinsicWidth();
+        final int origH = d.getIntrinsicHeight();
+
+        // Calculate the actual dimensions
+        final int actW = Math.round(origW * scaleX);
+        final int actH = Math.round(origH * scaleY);
+
+        ret[2] = actW;
+        ret[3] = actH;
+
+        // Get image position
+        // We assume that the image is centered into ImageView
+        int imgViewW = imageView.getWidth();
+        int imgViewH = imageView.getHeight();
+
+        int top = (int) (imgViewH - actH)/2;
+        int left = (int) (imgViewW - actW)/2;
+
+        ret[0] = left;
+        ret[1] = top;
+
+        return ret;
     }
 }

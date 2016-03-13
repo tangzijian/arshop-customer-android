@@ -23,4 +23,14 @@ public class ImageQueryResult {
     public ImageQueryResult() {
         annotations = new ArrayList<>();
     }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("============Image Query Result: =============\n");
+        sb.append("annotations: \n");
+        for (Annotation anno: annotations) {
+            sb.append(anno.toString()+"\n");
+        }
+        return sb.toString();
+    }
 }
