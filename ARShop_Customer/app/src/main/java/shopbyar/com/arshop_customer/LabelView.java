@@ -12,6 +12,7 @@ import android.widget.TextView;
 public class LabelView extends LinearLayout {
     public TextView mLabelText;
     public ImageView mIconView;
+    public int mPosition;
 
     public LabelView(Context context) {
         super(context);

@@ -14,6 +14,8 @@ import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Debug;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,6 +25,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -30,6 +33,7 @@ import android.widget.Toast;
 
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -63,6 +67,11 @@ public class PhotoAnnotationFragment extends Fragment {
     private float mPhotoHeight;
     private List<LabelView> mLabels;
 
+    private BottomAnnotationAdaptor mAnnotationAdaptor;
+    private LinearLayoutManager mLinearLayoutManager;
+
+    private List<Annotation> mAnnotationList = new ArrayList<>();
+
     public PhotoAnnotationFragment() {
         // Required empty public constructor
     }
@@ -89,15 +98,28 @@ public class PhotoAnnotationFragment extends Fragment {
         mImageFileName = getArguments().getString("image_file_name");
         mImageMetaFileName = getArguments().getString("image_meta_file_name");
         File imageFile = new File(mImageFileName);
-        if (imageFile.exists()) {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inSampleSize = 3;
-            Bitmap bmp = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
-            Bitmap orientedBmp = ExifUtil.rotateBitmap(imageFile.getAbsolutePath(), bmp);
-            Bitmap drawableBmp = orientedBmp.copy(Bitmap.Config.ARGB_8888, true);
+        File scaledImageDir = new File(imageFile.getParentFile(), "downsized");
+        if (!scaledImageDir.exists()) {
+            scaledImageDir.mkdir();
+        }
+        Bitmap scaledImage = null;
+        File scaledImageFile = new File(scaledImageDir, imageFile.getName());
+        if (scaledImageFile.exists()) {
+            scaledImage = BitmapFactory.decodeFile(scaledImageFile.getAbsolutePath());
+        } else {
+            if (imageFile.exists()) {
+                Bitmap bmp = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+                scaledImage = scaleBitmap(bmp);
+                bmp.recycle();
+                System.gc();
+                saveDownsizedImage(scaledImage, scaledImageFile);
+            }
+        }
+        if (scaledImage != null) {
+            Bitmap drawableBmp = scaledImage.copy(Bitmap.Config.ARGB_8888, true);
             mPhotoWidth = drawableBmp.getWidth();
             mPhotoHeight = drawableBmp.getHeight();
-            bmp.recycle();
+            scaledImage.recycle();
             System.gc();
             mCanvas = new Canvas(drawableBmp);
             mImageView = (ImageView) view.findViewById(R.id.image_view);
@@ -110,7 +132,90 @@ public class PhotoAnnotationFragment extends Fragment {
                 }
             });
         }
+
+        RecyclerView recList = (RecyclerView) view.findViewById(R.id.annotation_list);
+        recList.setHasFixedSize(true);
+        mLinearLayoutManager = new LinearLayoutManager(getActivity());
+        mLinearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        recList.setLayoutManager(mLinearLayoutManager);
+        mAnnotationAdaptor = new BottomAnnotationAdaptor(mAnnotationList);
+        mAnnotationAdaptor.annotationClickListener = new BottomAnnotationAdaptor.OnAnnotationClickListener() {
+            @Override
+            public void onAnnotationClicked(int position) {
+                showClickedAnnotationLabel(position);
+            }
+        };
+        recList.setAdapter(mAnnotationAdaptor);
+
+        Button showAll = (Button) view.findViewById(R.id.show_all);
+        showAll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showAllLabels();
+            }
+        });
         return view;
+    }
+
+    public void showClickedAnnotationLabel(int position) {
+        for (int index=0; index<mAnnotationList.size();index++) {
+            LabelView label = mLabels.get(index);
+            if (index == position) {
+                label.setVisibility(View.VISIBLE);
+            } else {
+                label.setVisibility(View.INVISIBLE);
+            }
+        }
+    }
+
+    public void showAllLabels() {
+        for (LabelView label : mLabels) {
+            label.setVisibility(View.VISIBLE);
+        }
+    }
+
+
+    private  void saveDownsizedImage(Bitmap bmp, File file) {
+        FileOutputStream output = null;
+        try {
+            output = new FileOutputStream(file);
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, output);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private Bitmap scaleBitmap(Bitmap bm) {
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+        float maxWidth = (float)1000.0;
+        float maxHeight = (float)1000.0;
+        if (width > height) {
+            // landscape
+            float ratio = (float) width / maxWidth;
+            width = (int)maxWidth;
+            height = (int)(height / ratio);
+        } else if (height > width) {
+            // portrait
+            float ratio = (float) height / maxHeight;
+            height = (int)maxHeight;
+            width = (int)(width / ratio);
+        } else {
+            // square
+            height = (int)maxHeight;
+            width = (int)maxWidth;
+        }
+
+        bm = Bitmap.createScaledBitmap(bm, width, height, true);
+        return bm;
     }
 
     @Override
@@ -118,7 +223,10 @@ public class PhotoAnnotationFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         if (savedInstanceState == null && mQueryResult == null) {
             RequestBody shopId = RequestBody.create(MediaType.parse("multipart/form-data"), "27");
-            File f = new File(mImageFileName);
+            File imageFile = new File(mImageFileName);
+            File scaledImageDir = new File(imageFile.getParentFile(), "downsized");
+            File f = new File(scaledImageDir, imageFile.getName());
+//            File f = new File(mImageFileName);
             RequestBody file = RequestBody.create(MediaType.parse("multipart/form-data"), f);
             String str = FileUtils.readTextFile(new File(mImageMetaFileName));
             str = "{\"image\": {\"meta\": " + str + "}}";
@@ -133,6 +241,10 @@ public class PhotoAnnotationFragment extends Fragment {
                 public void onResponse(Call<ImageQueryResult> call, Response<ImageQueryResult> response) {
                     mProgressDialog.hide();
                     mQueryResult = response.body();
+                    mAnnotationList.clear();
+                    mAnnotationList.addAll(mQueryResult.annotations);
+                    mAnnotationAdaptor.notifyDataSetChanged();
+                    mLinearLayoutManager.scrollToPosition(3);
                     drawAnnotations();
                 }
 
@@ -172,15 +284,19 @@ public class PhotoAnnotationFragment extends Fragment {
     }
 
     public void drawAnnotations() {
+        mAnnotationLabelOverlay.removeAllViews();
         if (mQueryResult == null) {
             return;
         }
         int[] actImageRect = getBitmapPositionInsideImageView(mImageView);
         List<Annotation> annotations = mQueryResult.annotations;
+        int index = -1;
         for (Annotation anno: annotations) {
+            index++;
             LabelView label = new LabelView(getActivity());
             label.mLabelText.setVisibility(View.VISIBLE);
             label.mLabelText.setText(anno.text);
+            label.mPosition = index;
             float padding = 100;
             float cx = anno.getCenterX() * actImageRect[2];
             float cy = anno.getCenterY() * actImageRect[3];
@@ -202,12 +318,17 @@ public class PhotoAnnotationFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     LabelView view = (LabelView)v;
-                    String text = view.mLabelText.getText().toString();
-                    AnnotationDetailFragment fragment = new AnnotationDetailFragment();
-                    Bundle args = new Bundle();
-                    args.putString("annotation_text", text);
-                    fragment.setArguments(args);
-                    getFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).addToBackStack(null).commit();
+                    Log.d("label position: ", ""+view.mPosition);
+                    int position = view.mPosition;
+                    if (position >= 0 && position < mAnnotationList.size()) {
+                        mLinearLayoutManager.scrollToPosition(position);
+                    }
+//                    String text = view.mLabelText.getText().toString();
+//                    AnnotationDetailFragment fragment = new AnnotationDetailFragment();
+//                    Bundle args = new Bundle();
+//                    args.putString("annotation_text", text);
+//                    fragment.setArguments(args);
+//                    getFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).addToBackStack(null).commit();
                 }
             });
             if (mLabels == null) {
