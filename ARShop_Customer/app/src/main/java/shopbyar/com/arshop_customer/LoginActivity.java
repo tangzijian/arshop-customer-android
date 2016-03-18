@@ -15,10 +15,10 @@ import android.widget.Toast;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import retrofit.Call;
-import retrofit.Callback;
-import retrofit.Response;
-import retrofit.Retrofit;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 import shopbyar.com.arshop_customer.model.LoginUser;
 import shopbyar.com.arshop_customer.model.User;
 import shopbyar.com.arshop_customer.rest.RestClient;
@@ -82,7 +82,7 @@ public class LoginActivity extends AppCompatActivity {
         final LoginActivity self = this;
         call.enqueue(new Callback<User>() {
             @Override
-            public void onResponse(Response<User> response, Retrofit retrofit) {
+            public void onResponse(Call<User> call, Response<User> response) {
                 User.currentUser = response.body();
                 if (User.currentUser != null) {
                     User.saveCurrentUser(PreferenceManager.getDefaultSharedPreferences(self));
@@ -99,7 +99,7 @@ public class LoginActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Throwable t) {
+            public void onFailure(Call<User> call, Throwable t) {
                 Log.d(TAG, t.getMessage());
                 onLoginFailed();
                 progressDialog.dismiss();

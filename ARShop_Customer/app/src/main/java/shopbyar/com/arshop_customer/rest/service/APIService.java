@@ -1,24 +1,29 @@
 package shopbyar.com.arshop_customer.rest.service;
 
-import com.squareup.okhttp.RequestBody;
+import java.util.Map;
 
-import retrofit.Call;
-import retrofit.http.Body;
-import retrofit.http.Multipart;
-import retrofit.http.POST;
-import retrofit.http.PUT;
-import retrofit.http.Part;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.Multipart;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Part;
+import retrofit2.Call;
+import retrofit2.http.FieldMap;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.POST;
 import shopbyar.com.arshop_customer.model.ImageQueryResult;
 import shopbyar.com.arshop_customer.model.LoginUser;
-import shopbyar.com.arshop_customer.model.RegisterUser;
 import shopbyar.com.arshop_customer.model.User;
 
 /**
  * Created by zijiantang on 25/2/16.
  */
 public interface APIService {
+    @FormUrlEncoded
     @POST("users/signup/")
-    Call<User> userSignup(@Body RegisterUser user);
+    Call<User> userSignup(@FieldMap Map<String, String> params);
 
     @PUT("users/login/")
     Call<User> userLogin(@Body LoginUser user);
@@ -28,7 +33,7 @@ public interface APIService {
 
     @Multipart
     @POST("clusters/json/")
-    Call<ImageQueryResult> getAnnotationsOnImage(@Part("file\"; filename=\"image.jpg\" ")RequestBody file,
+    Call<ImageQueryResult> getAnnotationsOnImage(@Part("file\"; filename=\"image.jpg\" ") RequestBody file,
                                                  @Part("shop_id") RequestBody shopId,
                                                  @Part("json") RequestBody json);
 }

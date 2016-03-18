@@ -28,18 +28,18 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.RequestBody;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import retrofit.Call;
-import retrofit.Callback;
-import retrofit.Response;
-import retrofit.Retrofit;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 import shopbyar.com.arshop_customer.model.Annotation;
 import shopbyar.com.arshop_customer.model.ImageQueryResult;
 import shopbyar.com.arshop_customer.rest.RestClient;
@@ -128,17 +128,16 @@ public class PhotoAnnotationFragment extends Fragment {
             mProgressDialog.setIndeterminate(true);
             mProgressDialog.setMessage("Searching...");
             mProgressDialog.show();
-            final PhotoAnnotationFragment self = this;
             call.enqueue(new Callback<ImageQueryResult>() {
                 @Override
-                public void onResponse(Response<ImageQueryResult> response, Retrofit retrofit) {
+                public void onResponse(Call<ImageQueryResult> call, Response<ImageQueryResult> response) {
                     mProgressDialog.hide();
                     mQueryResult = response.body();
                     drawAnnotations();
                 }
 
                 @Override
-                public void onFailure(Throwable t) {
+                public void onFailure(Call<ImageQueryResult> call, Throwable t) {
                     mProgressDialog.hide();
                     Toast.makeText(getActivity(), "Failed to fetch annotations.", Toast.LENGTH_LONG).show();
                 }
