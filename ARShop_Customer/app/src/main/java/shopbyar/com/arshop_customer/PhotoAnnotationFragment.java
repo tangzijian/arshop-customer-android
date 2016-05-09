@@ -2,6 +2,7 @@ package shopbyar.com.arshop_customer;
 
 
 import android.app.ProgressDialog;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -13,6 +14,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Debug;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -222,7 +224,7 @@ public class PhotoAnnotationFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         if (savedInstanceState == null && mQueryResult == null) {
-            RequestBody shopId = RequestBody.create(MediaType.parse("multipart/form-data"), "27");
+            RequestBody shopId = RequestBody.create(MediaType.parse("multipart/form-data"), String.valueOf(getShopId()));
             File imageFile = new File(mImageFileName);
             File scaledImageDir = new File(imageFile.getParentFile(), "downsized");
             File f = new File(scaledImageDir, imageFile.getName());
@@ -255,6 +257,11 @@ public class PhotoAnnotationFragment extends Fragment {
                 }
             });
         }
+    }
+
+    public int getShopId() {
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        return settings.getInt("shopId", 27); // default is vivo shop id
     }
 
     @Override

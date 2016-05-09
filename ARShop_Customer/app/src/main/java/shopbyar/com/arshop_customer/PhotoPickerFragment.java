@@ -1,8 +1,10 @@
 package shopbyar.com.arshop_customer;
 
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,6 +37,9 @@ public class PhotoPickerFragment extends Fragment {
                 gotoCameraFragment();
             }
         });
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        int id = settings.getInt("shopId", 0);
+        System.out.print(id);
         return view;
     }
 

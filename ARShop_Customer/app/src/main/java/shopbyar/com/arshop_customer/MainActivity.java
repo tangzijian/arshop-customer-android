@@ -137,7 +137,8 @@ public class MainActivity extends AppCompatActivity {
         Class fragmentClass = null;
         switch ((int)item.getIdentifier()) {
             case 1:
-                fragmentClass = PhotoPickerFragment.class;
+//                fragmentClass = PhotoPickerFragment.class;
+                fragmentClass = ShopSelectFragment.class;
                 break;
             case 2:
                 fragmentClass = MyShoppingListFragment.class;
@@ -149,17 +150,25 @@ public class MainActivity extends AppCompatActivity {
                 userLogout();
                 return;
             default:
-                fragmentClass = PhotoPickerFragment.class;
+                fragmentClass = ShopSelectFragment.class;
         }
         try {
             fragment = (Fragment) fragmentClass.newInstance();
-            if (fragment instanceof PhotoPickerFragment) {
-                ((PhotoPickerFragment)fragment).setOnClickListener(new View.OnClickListener() {
+//            if (fragment instanceof PhotoPickerFragment) {
+//                ((PhotoPickerFragment)fragment).setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        startFilePickerIntent();
+//                    }
+//                });
+//            }
+            if (fragment instanceof ShopSelectFragment) {
+                ((ShopSelectFragment)fragment).mListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         startFilePickerIntent();
                     }
-                });
+                };
             }
             getFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).commit();
         } catch (Exception e) {
